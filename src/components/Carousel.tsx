@@ -11,11 +11,12 @@ const CarouselContainer = styled.div`
 `
 const CarouselItem = styled.div<{
     offset: number;
+    transitionTime: number;
 }>`
     width: 500px;
     height: 500px;
     min-width: 500px;
-    transition: transform 0.5s;
+    transition: transform ${({transitionTime})=>transitionTime}ms ease-in;
     transform: translateX( ${({offset}) => (-offset * 100)}%);
 
 `
@@ -44,11 +45,12 @@ interface CarouselProps {
     loop?: boolean;
     autoLoop?: boolean;
     autoTime?: number;
+    transitionTime?: number;
 }
 
 const Carousel = (
     {children: propChildren, loop, 
-        autoLoop, autoTime = 2000}: CarouselProps) => {
+        autoLoop, autoTime = 2000, transitionTime=500}: CarouselProps) => {
     const children = Array.isArray(propChildren) ? propChildren : [propChildren];
 
     const [idx, setIdx] = useState(0);
@@ -75,7 +77,7 @@ const Carousel = (
             }}
             position="left">{"<"}</CarouselButton>
         {
-            children.map((child, index) =><CarouselItem offset={idx} key={index}>
+            children.map((child, index) =><CarouselItem transitionTime={transitionTime} offset={idx} key={index}>
                 {child}
             </CarouselItem>)
         }
