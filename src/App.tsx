@@ -7,7 +7,7 @@ import Carousel from './components/Carousel';
 function App() {
   return (
     <div className="App">
-      <Carousel loop>
+      <Carousel loop autoLoop autoTime={500}>
         <h1>
           hello
         </h1>

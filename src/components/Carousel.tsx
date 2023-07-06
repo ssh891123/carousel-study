@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 const CarouselContainer = styled.div`
     width: 500px;
@@ -42,12 +42,27 @@ const CarouselButton = styled.div<{
 interface CarouselProps {
     children: ReactNode | ReactNode[]
     loop?: boolean;
+    autoLoop?: boolean;
+    autoTime?: number;
 }
 
-const Carousel = ({children: propChildren, loop}: CarouselProps) => {
+const Carousel = (
+    {children: propChildren, loop, 
+        autoLoop, autoTime = 2000}: CarouselProps) => {
     const children = Array.isArray(propChildren) ? propChildren : [propChildren];
 
     const [idx, setIdx] = useState(0);
+
+    useEffect(() => {
+        if(autoLoop) {
+            const intv = setInterval(()=> 
+                setIdx(prev => 
+                    prev < children.length-1 ? prev + 1 : 0),
+                autoTime);
+    
+            return () => clearInterval(intv);
+        }
+    }, [autoLoop, autoTime, children.length]);
     
     return <CarouselContainer>
         <CarouselButton 
@@ -60,7 +75,7 @@ const Carousel = ({children: propChildren, loop}: CarouselProps) => {
             }}
             position="left">{"<"}</CarouselButton>
         {
-            children.map(child =><CarouselItem offset={idx}>
+            children.map((child, index) =><CarouselItem offset={idx} key={index}>
                 {child}
             </CarouselItem>)
         }
