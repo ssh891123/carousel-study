@@ -1,28 +1,34 @@
 import styled from "@emotion/styled";
 import { ReactNode, useEffect, useState } from "react";
 
-const CarouselContainer = styled.div`
+const CarouselContainer = styled.div<{
+    direction: 'column' | 'row';
+}>`
     width: 500px;
     height: 500px;
     background-color: #eee;
     display: flex;
-    overflow: hidden; //밖으로 나가면 안보이게
+    overflow: hidden; // 밖으로 나가면 안보이게
     position: relative;
+    flex-direction:${({direction}) => direction};
 `
 const CarouselItem = styled.div<{
     offset: number;
     transitionTime: number;
+    direction: 'column' | 'row';
 }>`
     width: 500px;
     height: 500px;
     min-width: 500px;
+    min-height: 500px;
     transition: transform ${({transitionTime})=>transitionTime}ms ease-in;
-    transform: translateX( ${({offset}) => (-offset * 100)}%);
+    transform: translate${({direction}) => direction === 'row' ? 'X' : 'Y'}( ${({offset}) => (-offset * 100)}%);
 
 `
 
 const CarouselButton = styled.div<{
     position: 'left' | 'right';
+    direction: 'column' | 'row';
 }>`
     z-index:999;
     cursor:pointer;
@@ -32,9 +38,12 @@ const CarouselButton = styled.div<{
     color: white;
     position: absolute;
     font-size: 24px;
-    top: calc(50% - 25px);
-    ${({position}) => position === 'left' && "left:0"};
-    ${({position}) => position === 'right' && "right:0"};
+    top: calc(${({position, direction})=> direction==="row" ? '50% - 25px' : position === "left" ? "0" : "calc(100% - 50px)"});
+    ${({position, direction}) => position === 'left' &&
+        `left:${direction==="row" ? 0 : "calc(50% - 25px)"}`};
+    ${({position, direction}) => position === 'right' && 
+        `right:${direction==="row" ? 0 : "calc(50% - 25px)"}`};
+    ${({direction}) => direction === 'column' && "transform: rotate(90deg);"}
     display: flex;
     align-items: center;
     justify-content: center;
@@ -46,13 +55,14 @@ interface CarouselProps {
     autoLoop?: boolean;
     autoTime?: number;
     transitionTime?: number;
+    direction?: 'column' | 'row';
 }
 
 const Carousel = (
     {children: propChildren, loop, 
-        autoLoop, autoTime = 2000, transitionTime=500}: CarouselProps) => {
+        autoLoop, autoTime = 2000, transitionTime=500,
+        direction = "row"}: CarouselProps) => {
     const children = Array.isArray(propChildren) ? propChildren : [propChildren];
-
     const [idx, setIdx] = useState(0);
 
     useEffect(() => {
@@ -66,8 +76,9 @@ const Carousel = (
         }
     }, [autoLoop, autoTime, children.length]);
     
-    return <CarouselContainer>
+    return <CarouselContainer direction={direction}>
         <CarouselButton 
+            direction={direction}
             onClick ={() => {
                 if(idx > 0)
                     setIdx(prev => prev - 1)
@@ -77,11 +88,13 @@ const Carousel = (
             }}
             position="left">{"<"}</CarouselButton>
         {
-            children.map((child, index) =><CarouselItem transitionTime={transitionTime} offset={idx} key={index}>
+            children.map((child, index) =><CarouselItem 
+                transitionTime={transitionTime} direction={direction} offset={idx} key={index}>
                 {child}
             </CarouselItem>)
         }
         <CarouselButton 
+            direction={direction}
             onClick ={() => {
                 if(idx < children.length -1)
                     setIdx(prev => prev + 1)
